@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Valentine for Emelia 🤎</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Starry Night background (public domain) */
+    background:
+      linear-gradient(rgba(90,58,34,0.6), rgba(90,58,34,0.6)),
+      url("https://upload.wikimedia.org/wikipedia/commons/e/ea/The_Starry_Night.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Soft vignette to boost readability */
+  body::after{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(0,0,0,0.0), rgba(0,0,0,0.25));
+    z-index: 0;
+  }
+
+  .card {
+    background: #fff7f0;
+    padding: 28px 22px 32px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.45);
+    width: 92%;
+    max-width: 380px;
+    z-index: 5;
+    position: relative;
+  }
+
+  h1 {
+    color: #5a3a22;
+    font-size: 1.85em;
+    margin: 0 0 10px;
+  }
+
+  .pet {
+    font-size: 1.1em;
+    color: #8b5e3c;
+    margin: 0 0 18px;
+  }
+
+  #musicBtn {
+    margin-bottom: 18px;
+    background:#8b5e3c;
+    color:white;
+    padding:10px 20px;
+    border-radius:20px;
+    border:none;
+    font-size:0.95em;
+    cursor:pointer;
+  }
+
+  .buttons {
+    position: relative;
+    height: 140px;
+    margin-top: 10px;
+  }
+
+  button {
+    font-size: 1.1em;
+    padding: 12px 28px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+  }
+
+  #yes {
+    background: #5a3a22;
+    color: #fff;
+    z-index: 2;
+  }
+
+  #no {
+    background: #e0cfc2;
+    position: absolute;
+    top: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .burst {
+    position: absolute;
+    font-size: 30px;
+    animation: burst 1.3s ease-out forwards;
+    z-index: 6;
+  }
+
+  @keyframes burst {
+    from { transform: scale(1); opacity: 1; }
+    to {
+      transform: scale(1.8) translate(var(--x), var(--y));
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Swirly Star Field ---------- */
+  #starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;            /* behind card */
+    pointer-events: none;
+    filter: blur(0.1px);
+  }
+
+  /* Stars (dots) */
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    opacity: 0.85;
+    animation: twinkle 2.6s infinite ease-in-out;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.7); }
+  }
+
+  /* Brush-stroke swirl “groups” that gently rotate like Starry Night motion */
+  .swirl {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: screen;
+    background:
+      conic-gradient(
+        from 0deg,
+        rgba(255,255,255,0.0) 0deg,
+        rgba(255,255,255,0.35) 40deg,
+        rgba(255,255,255,0.0) 85deg,
+        rgba(255,255,255,0.25) 130deg,
+        rgba(255,255,255,0.0) 170deg,
+        rgba(255,255,255,0.30) 220deg,
+        rgba(255,255,255,0.0) 280deg,
+        rgba(255,255,255,0.22) 330deg,
+        rgba(255,255,255,0.0) 360deg
+      );
+    filter: blur(1.2px);
+    animation: swirlSpin var(--dur) linear infinite;
+    transform-origin: center;
+  }
+
+  @keyframes swirlSpin {
+    from { transform: rotate(0deg) scale(1); }
+    to   { transform: rotate(360deg) scale(1); }
+  }
+
+  /* Stars ride the swirl via subtle orbit */
+  .orbit {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    left: 50%;
+    top: 50%;
+    transform-origin: 0 0;
+    animation: orbitSpin var(--odur) linear infinite;
+  }
+
+  @keyframes orbitSpin {
+    from { transform: rotate(0deg) translateX(var(--r)); }
+    to   { transform: rotate(360deg) translateX(var(--r)); }
+  }
+
+  /* ---------- Floating Desserts ---------- */
+  .dessert {
+    position: absolute;
+    font-size: 28px;
+    animation: dessertFloat 14s linear infinite;
+    opacity: 0.85;
+    z-index: 0;
+  }
+
+  @keyframes dessertFloat {
+    from { transform: translateY(110vh) rotate(0deg); }
+    to   { transform: translateY(-120px) rotate(360deg); }
+  }
+
+  /* ---------- Final Screen ---------- */
+  .final-screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 20;
+    background:
+      linear-gradient(rgba(90,58,34,0.72), rgba(90,58,34,0.72)),
+      url("https://upload.wikimedia.org/wikipedia/commons/e/ea/The_Starry_Night.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .final-box {
+    background: rgba(255,247,240,0.95);
+    border-radius: 26px;
+    padding: 26px 22px;
+    max-width: 520px;
+    width: 92%;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+  }
+
+  .final-text {
+    font-size: 1.35em;
+    color: #5a3a22;
+    line-height: 1.35;
+    margin-bottom: 18px;
+    white-space: pre-line;
+  }
+
+  .final-sub {
+    font-size: 1.1em;
+    color: #8b5e3c;
+  }
+
+  #replayBtn {
+    margin-top: 18px;
+    background:#5a3a22;
+    color:white;
+    padding:10px 18px;
+    border-radius:18px;
+    border:none;
+    cursor:pointer;
+    font-size: 1em;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Swirly star layer -->
+<div id="starfield"></div>
+
+<div class="card" id="mainCard">
+  <h1>Emelia 🤎<br>Will you be my Valentine?</h1>
+  <div class="pet">My Lahori Gori Pakori 💕</div>
+
+  <button id="musicBtn">▶ Tap for music 🤎</button>
+
+  <div class="buttons">
+    <button id="yes">Yes 🤎</button>
+    <button id="no">No 😒</button>
+  </div>
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<!-- Final screen -->
+<div class="final-screen" id="finalScreen">
+  <div class="final-box">
+    <div class="final-text">From the day I met you, till forever,
+Your Desi Dude.</div>
+    <div class="final-sub">🤎💫</div>
+    <button id="replayBtn">Replay ✨</button>
+  </div>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="jimmy-brown-2-things.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  // ---------- Music ----------
+  const music = document.getElementById("bgMusic");
+  const musicBtn = document.getElementById("musicBtn");
+
+  musicBtn.addEventListener("click", () => {
+    music.volume = 0.7;
+    music.play().then(() => {
+      musicBtn.textContent = "🎵 Playing…";
+      musicBtn.disabled = true;
+      musicBtn.style.opacity = 0.7;
+    }).catch(() => {
+      alert("Tap again for music 🤎");
+    });
+  });
+
+  // ---------- Cute Pop Sound ----------
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function pop(freq = 600) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "triangle";
+    o.frequency.value = freq;
+    g.gain.value = 0.2;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.15);
+  }
+
+  // ---------- Runaway NO (stays inside the buttons box) ----------
+  const noBtn = document.getElementById("no");
+  const buttonsBox = document.querySelector(".buttons");
+
+  function moveNo() {
+    pop(300);
+    const box = buttonsBox.getBoundingClientRect();
+    const maxX = box.width - noBtn.offsetWidth;
+    const maxY = box.height - noBtn.offsetHeight;
+
+    const x = Math.random() * Math.max(0, maxX);
+    const y = Math.random() * Math.max(0, maxY);
+
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+    noBtn.style.transform = "none";
+  }
+
+  noBtn.addEventListener("mouseenter", moveNo);
+  noBtn.addEventListener("touchstart", moveNo);
+
+  // Keep "No" visible on load (center-ish inside box)
+  requestAnimationFrame(() => {
+    noBtn.style.left = "50%";
+    noBtn.style.top = "75px";
+    noBtn.style.transform = "translateX(-50%)";
+  });
+
+  // ---------- Fireworks ----------
+  const canvas = document.getElementById("fireworks");
+  const ctx = canvas.getContext("2d");
+
+  function resize() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  }
+  resize();
+  addEventListener("resize", resize);
+
+  let particles = [];
+  let fireworksAnimating = false;
+
+  function firework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height / 2;
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x, y,
+        vx: (Math.random()-0.5)*6,
+        vy: (Math.random()-0.5)*6,
+        life: 90
+      });
+    }
+  }
+
+  function animateFireworks() {
+    fireworksAnimating = true;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach((p,i)=>{
+      p.x+=p.vx;
+      p.y+=p.vy;
+      p.life--;
+      ctx.fillStyle = `hsl(${Math.random()*360},100%,65%)`;
+      ctx.fillRect(p.x,p.y,3,3);
+      if(p.life<=0) particles.splice(i,1);
+    });
+
+    if (particles.length > 0) {
+      requestAnimationFrame(animateFireworks);
+    } else {
+      fireworksAnimating = false;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+
+  // ---------- Final Screen ----------
+  const finalScreen = document.getElementById("finalScreen");
+  const mainCard = document.getElementById("mainCard");
+  const replayBtn = document.getElementById("replayBtn");
+
+  function showFinalScreen() {
+    mainCard.style.display = "none";
+    finalScreen.style.display = "grid";
+  }
+
+  replayBtn.addEventListener("click", () => {
+    finalScreen.style.display = "none";
+    mainCard.style.display = "block";
+  });
+
+  // ---------- YES ----------
+  document.getElementById("yes").addEventListener("click", () => {
+    pop(900);
+
+    for(let i=0;i<6;i++) firework();
+    if (!fireworksAnimating) animateFireworks();
+
+    // Hearts + paratha rolls (using 🥖 as a roll symbol)
+    const burstItems = ["🤎","💖","💘","❤️","🥖","🥖","💞"];
+    for(let i=0;i<36;i++){
+      const s=document.createElement("span");
+      s.className="burst";
+      s.textContent=burstItems[Math.floor(Math.random() * burstItems.length)];
+      s.style.left="50%";
+      s.style.top="50%";
+      s.style.setProperty("--x",(Math.random()*340-170)+"px");
+      s.style.setProperty("--y",(Math.random()*340-170)+"px");
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),1300);
+    }
+
+    // After the cute chaos, show the final message screen
+    setTimeout(showFinalScreen, 1400);
+  });
+
+  // ---------- Swirly Stars like Starry Night brush strokes ----------
+  const starfield = document.getElementById("starfield");
+
+  // Create a few gentle swirl “brush stroke” fields
+  const swirlCount = 4;
+  for (let s = 0; s < swirlCount; s++) {
+    const swirl = document.createElement("div");
+    swirl.className = "swirl";
+    swirl.style.left = (10 + Math.random() * 70) + "vw";
+    swirl.style.top = (5 + Math.random() * 70) + "vh";
+    swirl.style.setProperty("--dur", (40 + Math.random() * 35) + "s");
+    swirl.style.opacity = (0.22 + Math.random() * 0.18).toFixed(2);
+    const size = 220 + Math.random() * 220;
+    swirl.style.width = size + "px";
+    swirl.style.height = size + "px";
+    starfield.appendChild(swirl);
+
+    // Put orbiting stars around each swirl
+    const orbitStars = 18 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < orbitStars; i++) {
+      const orbit = document.createElement("div");
+      orbit.className = "orbit";
+      orbit.style.setProperty("--odur", (18 + Math.random() * 20) + "s");
+      orbit.style.setProperty("--r", (25 + Math.random() * (size / 2 - 10)) + "px");
+      orbit.style.left = "50%";
+      orbit.style.top = "50%";
+
+      const star = document.createElement("div");
+      star.className = "star";
+      // a few slightly bigger stars for variation
+      const px = (Math.random() < 0.2) ? 3 : 2;
+      star.style.width = px + "px";
+      star.style.height = px + "px";
+      star.style.animationDelay = (Math.random() * 3) + "s";
+
+      orbit.appendChild(star);
+      swirl.appendChild(orbit);
+    }
+  }
+
+  // Also sprinkle some free stars across the sky
+  for (let i = 0; i < 45; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * 100 + "vw";
+    star.style.top = Math.random() * 100 + "vh";
+    star.style.animationDelay = Math.random() * 3 + "s";
+    star.style.opacity = (0.35 + Math.random() * 0.55).toFixed(2);
+    starfield.appendChild(star);
+  }
+
+  // ---------- Floating Desserts: cookies, muffins, crepes ----------
+  const desserts = ["🍪", "🧁", "🥞"]; // cookie, muffin/cupcake, crepe-style pancake stack
+  for (let i = 0; i < 12; i++) {
+    const d = document.createElement("div");
+    d.className = "dessert";
+    d.textContent = desserts[Math.floor(Math.random() * desserts.length)];
+    d.style.left = Math.random() * 100 + "vw";
+    d.style.animationDuration = (11 + Math.random() * 8) + "s";
+    d.style.fontSize = (24 + Math.random() * 14) + "px";
+    starfield.appendChild(d); // keep them behind the card
+  }
+</script>
+
+</body>
+</html>
